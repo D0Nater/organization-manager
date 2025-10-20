@@ -1,0 +1,52 @@
+name: Code lint
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - develop
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup uv
+        run: |
+          pipx install uv
+          echo "~/.local/bin" >> $GITHUB_PATH
+
+      - name: uv prepare
+        run: |
+          uv lock --check
+          uv sync --frozen --reinstall
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        id: python
+        with:
+          python-version: "3.12"
+
+      - name: Add python and venv to PATH
+        run: |
+          echo "${{ steps.python.outputs.python-path }}" >> $GITHUB_PATH
+          echo "$(pwd)/.venv/bin" >> $GITHUB_PATH
+
+      - name: Install dependencies
+        run: |
+          uv sync
+
+      - name: Run Ruff Format Check
+        run: |
+          ruff format --check .
+
+      - name: Type check
+        run: |
+          uv run ruff check
+          uv run mypy --install-types --non-interactive --show-error-codes --show-column-numbers --pretty .

@@ -18,6 +18,18 @@ format:
 .PHONY: flint
 flint: format lint
 
+.PHONY: migration
+migration:
+	alembic revision --autogenerate -m "$(msg)"
+
+.PHONY: dev-compose
+dev-compose:
+	docker compose -p orgmgr -f deployment/docker-compose.local.yml up -d --build --remove-orphans
+
+.PHONY: dev-destroy
+dev-destroy:
+	docker compose -p orgmgr -f deployment/docker-compose.local.yml down -v --remove-orphans
+
 .PHONY: help
 help:
 	@echo "Available targets:"
@@ -25,3 +37,6 @@ help:
 	@echo "  style     - Check code formatting and import sorting"
 	@echo "  format    - Automatically fix code style and formatting"
 	@echo "  flint     - Format code and run linters"
+	@echo "  migration - Create a new Alembic migration (use msg='')"
+	@echo "  dev-compose  - Start local development environment"
+	@echo "  dev-destroy  - Remove local development environment"
