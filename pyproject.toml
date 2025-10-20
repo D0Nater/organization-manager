@@ -1,0 +1,68 @@
+[project]
+name = "orgmgr"
+version = "0.1.0"
+description = "Organization manager"
+
+requires-python = ">=3.12,<4"
+dependencies = []
+
+[project.scripts]
+orgmgr = "orgmgr.__main__:main"
+
+[dependency-groups]
+dev = [
+  "mypy>=1.14.1",
+  "pre-commit>=4.1.0",
+  "ruff>=0.9.2",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.ruff]
+line-length = 120
+indent-width = 4
+target-version = "py312"
+exclude = [".venv", ".direnv", "__pycache__", ".git", "build", "dist"]
+
+[tool.ruff.lint]
+select = ["E", "F"]
+extend-select = [
+  "A",    # flake8-builtins
+  "C4",   # flake8-comprehensions
+  "D",    # pydocstyle
+  "ERA",  # eradicate (commented code)
+  "PT",   # flake8-pytest-style
+  "SIM",  # flake8-simplify
+  "T20",  # flake8-print
+  "UP",   # pyupgrade
+]
+
+ignore = ["S608"]
+
+# Allow fix for all enabled rules (when `--fix`) is provided.
+fixable = ["C4", "E", "F", "UP", "SIM", "I"]
+unfixable = ["A", "D", "ERA", "PT", "S", "T20"]
+
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+[tool.ruff.lint.per-file-ignores]
+"migrations/*" = ["D103", "ERA001"]
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+lines-after-imports = 2
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+ignore-decorators = ["typing.overload"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+docstring-code-format = true
+docstring-code-line-length = "dynamic"
