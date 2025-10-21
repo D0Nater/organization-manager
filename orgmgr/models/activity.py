@@ -12,7 +12,7 @@ from orgmgr.lib.models import BaseModel
 
 
 class ActivityModel(BaseModel[Activity]):
-    """SQLAlchemy model representing the captcha configuration table."""
+    """SQLAlchemy model representing the building table."""
 
     __tablename__ = "activities"
 
@@ -32,7 +32,7 @@ class ActivityModel(BaseModel[Activity]):
         """Convert a Activity domain entity into a ActivityModel instance.
 
         Args:
-            entity (Activity): The captcha config domain entity.
+            entity (Activity): The building domain entity.
 
         Returns:
             Self: The corresponding SQLAlchemy model instance.

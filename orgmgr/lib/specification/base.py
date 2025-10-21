@@ -3,6 +3,8 @@
 import functools
 from abc import ABCMeta, abstractmethod
 from collections.abc import Callable
+from copy import copy
+from types import EllipsisType
 from typing import Any, Self, TypeVar
 
 
@@ -164,6 +166,48 @@ class Specification[T](metaclass=_SpecificationMeta):
             str: String representation including class name and description.
         """
         return f"<{self.class_name}: {self.description}>"
+
+
+class ValueSpecification[T, V](Specification[T]):
+    """Specification that holds a concrete or deferred value for comparison or evaluation within specification logic."""
+
+    description = "Value-based specification that encapsulates a fixed or deferred comparison value."
+
+    def __init__(self, value: V | EllipsisType = ...):
+        """Initialize a ValueSpecification with a concrete or deferred value used in specification evaluation logic.
+
+        Args:
+            value (V | EllipsisType): The concrete value to bind immediately or EllipsisType to defer binding.
+        """
+        super().__init__()
+        self._value = value
+
+    @property
+    def value(self) -> V:
+        """Return the bound value if present; raises AttributeError if the value is still deferred.
+
+        Returns:
+            V: The concrete value bound to this specification.
+
+        Raises:
+            AttributeError: If the value is not yet bound (was initialized with EllipsisType).
+        """
+        if isinstance(self._value, EllipsisType):
+            raise AttributeError("Need create spec instance with value by `new_with_value`")
+        return self._value
+
+    def new_with_value(self, value: V) -> Self:
+        """Return a new cloned instance from this one with the given value bound.
+
+        Args:
+            value (V): The concrete value to bind to the specification.
+
+        Returns:
+            Self: A new instance with the provided value bound.
+        """
+        x = copy(self)
+        x._value = value
+        return x
 
 
 class _AndOrSpecification(Specification[T]):

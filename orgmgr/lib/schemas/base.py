@@ -7,6 +7,7 @@ from typing import Any, Self, TypeVar
 from pydantic import BaseModel, ConfigDict
 from pydantic.config import JsonDict
 
+from orgmgr.lib.specification.base import ValueSpecification
 from orgmgr.lib.specification.field import FieldSpecification
 from orgmgr.lib.specification.sort import SortSpecification
 
@@ -103,7 +104,18 @@ class BaseEntityUpdateSchema[T](BaseSchema):
 class BaseFilterSchema(BaseSchema):
     """Base filter schema."""
 
-    def to_specifications(self) -> list[FieldSpecification[BaseSchema, Any]]:
+    def to_specifications(self) -> list[ValueSpecification[Any, Any]]:
+        """Convert schema fields with ValueSpecification into a list of specifications with assigned values.
+
+        Returns:
+            list[ValueSpecification[BaseSchema, Any]]: A list of field specifications built from the schema.
+        """
+        return self._collect_specs(
+            ValueSpecification,  # type: ignore[type-abstract]
+            lambda spec, value: spec.new_with_value(value),
+        )
+
+    def to_field_specifications(self) -> list[FieldSpecification[BaseSchema, Any]]:
         """Convert schema fields with FieldSpecification into a list of specifications with assigned values.
 
         Returns:

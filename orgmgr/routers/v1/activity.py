@@ -1,4 +1,4 @@
-"""Captcha config endpoints."""
+"""Activity endpoints."""
 
 from dishka.integrations.fastapi import DishkaRoute, FromDishka
 from fastapi import APIRouter
@@ -49,7 +49,7 @@ async def get_activities(
     pagination_info = PaginationInfo(page=pagination.page, per_page=pagination.limit)
     page = await activity_service.get_page(
         pagination_info,
-        specifications=filters.to_specifications(),
+        specifications=filters.to_field_specifications(),
         sort_specifications=filters.to_sort_specifications(),
     )
     return ActivityPaginationSchema.from_page(page)
