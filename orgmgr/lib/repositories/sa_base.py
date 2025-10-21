@@ -3,7 +3,7 @@
 from collections.abc import Sequence
 from typing import Any
 
-from sqlalchemy import Select, func, select
+from sqlalchemy import Select, delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from orgmgr.lib.entities.page import Page, PaginationInfo
@@ -129,6 +129,18 @@ class SABaseRepository[ID, E, M: BaseModel[Any]]:
         await self._session.merge(model)
         await self._session.flush()
         return model.to_entity()
+
+    async def delete(self, entity_id: ID) -> None:
+        """Delete a single entity by its primary key.
+
+        Args:
+            entity_id (ID): The primary key value of the entity to delete.
+
+        Returns:
+            None
+        """
+        stmt = delete(self.model).where(getattr(self.model, self.pk_name) == entity_id)
+        await self._session.execute(stmt)
 
     def build_list_stmt(
         self,
