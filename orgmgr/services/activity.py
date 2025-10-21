@@ -5,6 +5,7 @@ from typing import Any
 
 from orgmgr.core.entities.activity import Activity
 from orgmgr.core.exceptions.activity import ActivityNotFoundError
+from orgmgr.core.interfaces.actions.activity import ActivityAction
 from orgmgr.core.interfaces.repositories.activity import ActivityRepository
 from orgmgr.core.types import ActivityId
 from orgmgr.lib.entities.page import Page, PaginationInfo
@@ -15,28 +16,32 @@ from orgmgr.lib.specification.sort import SortSpecification
 class ActivityService:
     """Service layer for managing activity entities."""
 
-    def __init__(self, activity_repository: ActivityRepository):
-        """Initialize the activity service with a repository.
+    def __init__(self, activity_repository: ActivityRepository, activity_action: ActivityAction):
+        """Initializes the ActivityService with a repository and an action handler for activity operations.
 
         Args:
             activity_repository (ActivityRepository): Repository for activity persistence.
+            activity_action (ActivityAction): Action handler containing domain-level activity validations.
         """
         self._activity_repository = activity_repository
+        self._activity_action = activity_action
 
     async def create(self, entity: Activity) -> Activity:
-        """Create a new activity entity.
+        """Creates a new activity entity after validating its parent existence and nesting constraints.
 
         Args:
-            entity (Activity): The activity entity to create.
+            entity (Activity): The activity entity to be created.
 
         Returns:
-            Activity: The created activity entity.
+            Activity: The newly created activity entity.
 
         Raises:
-            ActivityNotFoundError: If no parent activity exists with the given ID.
+            ActivityNotFoundError: If the parent activity does not exist.
+            ActivityMaximumNestingError: If the activity exceeds the allowed nesting depth.
         """
-        if entity.parent_id:
-            await self.get_by_id(entity.parent_id)
+        if parent_id := entity.parent_id:
+            await self.get_by_id(parent_id)
+            await self._activity_action.validate_nesting(parent_id)
 
         return await self._activity_repository.create(entity)
 
@@ -80,19 +85,21 @@ class ActivityService:
         return activity
 
     async def update(self, entity: Activity) -> Activity:
-        """Update an existing activity entity.
+        """Updates an existing activity entity after validating parent existence and nesting depth.
 
         Args:
-            entity (Activity): The activity entity with updated values.
+            entity (Activity): The activity entity containing updated attributes.
 
         Returns:
             Activity: The updated activity entity.
 
         Raises:
-            ActivityNotFoundError: If no parent activity exists with the given ID.
+            ActivityNotFoundError: If the specified parent activity does not exist.
+            ActivityMaximumNestingError: If the activity exceeds the allowed nesting depth.
         """
-        if entity.parent_id:
-            await self.get_by_id(entity.parent_id)
+        if parent_id := entity.parent_id:
+            await self.get_by_id(parent_id)
+            await self._activity_action.validate_nesting(parent_id)
 
         return await self._activity_repository.update(entity)
 

@@ -7,6 +7,9 @@ from uuid import uuid4
 from orgmgr.core.types import ActivityId
 
 
+MAX_NESTING_LEVEL: int = 3
+
+
 @dataclass
 class Activity:
     """Domain entity representing a activity."""

@@ -4,7 +4,7 @@ from dishka.integrations.fastapi import DishkaRoute, FromDishka
 from fastapi import APIRouter
 from pyfa_converter_v2 import QueryDepends
 
-from orgmgr.core.exceptions.activity import ActivityNotFoundError
+from orgmgr.core.exceptions.activity import ActivityMaximumNestingError, ActivityNotFoundError
 from orgmgr.core.types import ActivityId
 from orgmgr.lib.entities.page import PaginationInfo
 from orgmgr.lib.schemas.pagination import PaginationRequest
@@ -27,7 +27,7 @@ router = APIRouter(tags=["activities"], prefix="/activities", route_class=Dishka
     "/",
     status_code=201,
     response_model=ActivitySchema,
-    openapi_extra=exc_list(ActivityNotFoundError),
+    openapi_extra=exc_list(ActivityNotFoundError, ActivityMaximumNestingError),
 )
 async def create_activity(
     activity_service: FromDishka[ActivityService],
@@ -72,7 +72,7 @@ async def get_activity(
 @router.put(
     "/{activity_id}",
     response_model=ActivitySchema,
-    openapi_extra=exc_list(ActivityNotFoundError),
+    openapi_extra=exc_list(ActivityNotFoundError, ActivityMaximumNestingError),
 )
 async def update_activity(
     activity_service: FromDishka[ActivityService],
@@ -89,7 +89,7 @@ async def update_activity(
 @router.patch(
     "/{activity_id}",
     response_model=ActivitySchema,
-    openapi_extra=exc_list(ActivityNotFoundError),
+    openapi_extra=exc_list(ActivityNotFoundError, ActivityMaximumNestingError),
 )
 async def patch_activity(
     activity_service: FromDishka[ActivityService],
