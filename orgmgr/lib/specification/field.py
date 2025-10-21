@@ -1,19 +1,18 @@
 """Field specification."""
 
 from collections.abc import Callable, Sequence
-from copy import copy
 from re import match as re_match
 from types import EllipsisType
-from typing import Any, Self, TypeVar
+from typing import Any, TypeVar
 
-from orgmgr.lib.specification.base import Specification
+from orgmgr.lib.specification.base import ValueSpecification
 from orgmgr.lib.utils.rattrs import rgetattr
 
 
 T = TypeVar("T")
 
 
-class FieldSpecification[T, V](Specification[T]):
+class FieldSpecification[T, V](ValueSpecification[T, V]):
     """Generic field-bound specification that can defer a value until bound via new_with_value()."""
 
     description = "Generic field-bound specification; holds a field name and a deferred or concrete value."
@@ -25,36 +24,8 @@ class FieldSpecification[T, V](Specification[T]):
             field (str): The dotted path or attribute name to read from objects.
             value (V | EllipsisType): The value to compare against, or EllipsisType to defer binding.
         """
-        super().__init__()
+        super().__init__(value)
         self.field = field
-        self._value = value
-
-    @property
-    def value(self) -> V:
-        """Return the bound value if present; raises AttributeError if the value is still deferred.
-
-        Returns:
-            V: The concrete value bound to this specification.
-
-        Raises:
-            AttributeError: If the value is not yet bound (was initialized with EllipsisType).
-        """
-        if isinstance(self._value, EllipsisType):
-            raise AttributeError("Need create spec instance with value by `new_with_value`")
-        return self._value
-
-    def new_with_value(self, value: V) -> Self:
-        """Return a new FieldSpecification cloned from this one with the given value bound.
-
-        Args:
-            value (V): The concrete value to bind to the specification.
-
-        Returns:
-            Self: A new instance with the provided value bound.
-        """
-        x = copy(self)
-        x._value = value
-        return x
 
 
 class EqualsSpecification(FieldSpecification[T, Any]):

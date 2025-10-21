@@ -3,24 +3,24 @@
 from collections.abc import Sequence
 from typing import Any, Protocol
 
-from orgmgr.core.entities.activity import Activity
-from orgmgr.core.types import ActivityId
+from orgmgr.core.entities.building import Building
+from orgmgr.core.types import BuildingId
 from orgmgr.lib.entities.page import Page, PaginationInfo
 from orgmgr.lib.specification.field import FieldSpecification
 from orgmgr.lib.specification.sort import SortSpecification
 
 
-class ActivityRepository(Protocol):
-    """Protocol defining the interface for activity repositories."""
+class BuildingRepository(Protocol):
+    """Protocol defining the interface for building repositories."""
 
-    async def create(self, activity: Activity) -> Activity:
-        """Create a new activity entity.
+    async def create(self, building: Building) -> Building:
+        """Create a new building entity.
 
         Args:
-            activity (Activity): The activity entity to create.
+            building (Building): The building entity to create.
 
         Returns:
-            Activity: The created activity entity.
+            Building: The created building entity.
         """
 
     async def get_page(
@@ -28,8 +28,8 @@ class ActivityRepository(Protocol):
         pagination: PaginationInfo,
         specifications: Sequence[FieldSpecification[Any, Any]] | None = None,
         sort_specifications: Sequence[SortSpecification] | None = None,
-    ) -> Page[Activity]:
-        """Return a single page of activity entities that satisfy optional specifications and sorting.
+    ) -> Page[Building]:
+        """Return a single page of building entities that satisfy optional specifications and sorting.
 
         Args:
             pagination (PaginationInfo): Pagination parameters.
@@ -39,7 +39,7 @@ class ActivityRepository(Protocol):
                 Defaults to None.
 
         Returns:
-            Page[Activity]: A page of activity entities with pagination metadata.
+            Page[Building]: A page of building entities with pagination metadata.
         """
 
     async def get_list(
@@ -47,8 +47,8 @@ class ActivityRepository(Protocol):
         pagination: PaginationInfo,
         specifications: Sequence[FieldSpecification[Any, Any]] | None = None,
         sort_specifications: Sequence[SortSpecification] | None = None,
-    ) -> list[Activity]:
-        """Retrieve a list of activity entities matching optional specifications and sorting.
+    ) -> list[Building]:
+        """Retrieve a list of building entities matching optional specifications and sorting.
 
         Args:
             pagination (PaginationInfo): Pagination parameters.
@@ -58,45 +58,45 @@ class ActivityRepository(Protocol):
                 Defaults to None.
 
         Returns:
-            list[Activity]: A list of activity entities matching the given specifications.
+            list[Building]: A list of building entities matching the given specifications.
         """
 
     async def get_count(self, specifications: Sequence[FieldSpecification[Any, Any]] | None = None) -> int:
-        """Count the number of activity entities matching optional specifications.
+        """Count the number of building entities matching optional specifications.
 
         Args:
             specifications (Sequence[FieldSpecification[Any, Any]] | None): A list of filter specifications.
                 Defaults to None.
 
         Returns:
-            int: The total count of activity entities matching the specifications.
+            int: The total count of building entities matching the specifications.
         """
 
-    async def get_by_id(self, activity_id: ActivityId) -> Activity | None:
-        """Retrieve a single activity entity by its ID.
+    async def get_by_id(self, building_id: BuildingId) -> Building | None:
+        """Retrieve a single building entity by its ID.
 
         Args:
-            activity_id (ActivityId): The unique identifier of the activity to retrieve.
+            building_id (BuildingId): The unique identifier of the building to retrieve.
 
         Returns:
-            Activity | None: The retrieved activity entity, or None if not found.
+            Building | None: The retrieved building entity, or None if not found.
         """
 
-    async def update(self, activity: Activity) -> Activity:
-        """Update an existing activity entity.
+    async def update(self, building: Building) -> Building:
+        """Update an existing building entity.
 
         Args:
-            activity (Activity): The activity entity with updated values.
+            building (Building): The building entity with updated values.
 
         Returns:
-            Activity: The updated activity entity.
+            Building: The updated building entity.
         """
 
-    async def delete(self, activity_id: ActivityId) -> None:
-        """Delete an existing activity entity by its ID.
+    async def delete(self, building_id: BuildingId) -> None:
+        """Delete an existing building entity by its ID.
 
         Args:
-            activity_id (ActivityId): The unique identifier of the activity to delete.
+            building_id (BuildingId): The unique identifier of the building to delete.
 
         Returns:
             None
