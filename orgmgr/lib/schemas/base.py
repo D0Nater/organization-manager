@@ -115,7 +115,7 @@ class BaseFilterSchema(BaseSchema):
 
         for field_name, field_info in self.iterate_set_fields_info():
             field_filter: Any = field_info.get("filter", None)
-            if issubclass(field_filter, BaseSQLAlchemyFilter):
+            if "filter" in field_info and issubclass(field_filter, BaseSQLAlchemyFilter):
                 filters.append(field_filter(getattr(self, field_name)))
 
         return filters
@@ -169,7 +169,7 @@ class BaseFilterSchema(BaseSchema):
 
         for field_name, field_info in self.iterate_set_fields_info():
             field_spec: Any = field_info.get("specification", None)
-            if isinstance(field_spec, spec_type):
+            if "specification" in field_info and isinstance(field_spec, spec_type):
                 specs.append(build(field_spec, getattr(self, field_name)))
 
         return specs
