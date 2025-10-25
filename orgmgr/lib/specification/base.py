@@ -210,6 +210,10 @@ class ValueSpecification[T, V](Specification[T]):
         return x
 
 
+class CustomSpecification[T, V](ValueSpecification[T, V]):
+    """Custom specification."""
+
+
 class _AndOrSpecification(Specification[T]):
     """Base class for composite specifications using AND/OR logic.
 

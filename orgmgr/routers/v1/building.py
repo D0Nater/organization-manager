@@ -23,12 +23,7 @@ from orgmgr.services import BuildingService
 router = APIRouter(tags=["buildings"], prefix="/buildings", route_class=DishkaRoute)
 
 
-@router.post(
-    "/",
-    status_code=201,
-    response_model=BuildingSchema,
-    openapi_extra=exc_list(BuildingNotFoundError),
-)
+@router.post("/", status_code=201, response_model=BuildingSchema)
 async def create_building(
     building_service: FromDishka[BuildingService],
     schema: BuildingCreateSchema,

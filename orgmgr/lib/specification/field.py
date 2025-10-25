@@ -3,13 +3,10 @@
 from collections.abc import Callable, Sequence
 from re import match as re_match
 from types import EllipsisType
-from typing import Any, TypeVar
+from typing import Any
 
 from orgmgr.lib.specification.base import ValueSpecification
 from orgmgr.lib.utils.rattrs import rgetattr
-
-
-T = TypeVar("T")
 
 
 class FieldSpecification[T, V](ValueSpecification[T, V]):
@@ -28,7 +25,7 @@ class FieldSpecification[T, V](ValueSpecification[T, V]):
         self.field = field
 
 
-class EqualsSpecification(FieldSpecification[T, Any]):
+class EqualsSpecification[T](FieldSpecification[T, Any]):
     """Specification that matches objects whose field value equals the bound value."""
 
     description = "Matches when rgetattr(obj, field) == value."
@@ -45,7 +42,7 @@ class EqualsSpecification(FieldSpecification[T, Any]):
         return rgetattr(obj, self.field) == self.value
 
 
-class NotEqualsSpecification(FieldSpecification[T, Any]):
+class NotEqualsSpecification[T](FieldSpecification[T, Any]):
     """Specification that matches objects whose field value does not equal the bound value."""
 
     description = "Matches when rgetattr(obj, field) != value."
@@ -62,7 +59,7 @@ class NotEqualsSpecification(FieldSpecification[T, Any]):
         return rgetattr(obj, self.field) != self.value
 
 
-class GreaterThanSpecification(FieldSpecification[T, Any]):
+class GreaterThanSpecification[T](FieldSpecification[T, Any]):
     """Specification that matches objects whose field value is strictly greater than the bound value."""
 
     description = "Matches when rgetattr(obj, field) > value."
@@ -79,7 +76,7 @@ class GreaterThanSpecification(FieldSpecification[T, Any]):
         return rgetattr(obj, self.field) > self.value
 
 
-class LessThanSpecification(FieldSpecification[T, Any]):
+class LessThanSpecification[T](FieldSpecification[T, Any]):
     """Specification that matches objects whose field value is strictly less than the bound value."""
 
     description = "Matches when rgetattr(obj, field) < value."
@@ -96,7 +93,7 @@ class LessThanSpecification(FieldSpecification[T, Any]):
         return rgetattr(obj, self.field) < self.value
 
 
-class GreaterThanOrEqualsToSpecification(FieldSpecification[T, Any]):
+class GreaterThanOrEqualsToSpecification[T](FieldSpecification[T, Any]):
     """Specification that matches objects whose field value is greater than or equal to the bound value."""
 
     description = "Matches when rgetattr(obj, field) >= value."
@@ -113,7 +110,7 @@ class GreaterThanOrEqualsToSpecification(FieldSpecification[T, Any]):
         return rgetattr(obj, self.field) >= self.value
 
 
-class LessThanOrEqualsToSpecification(FieldSpecification[T, Any]):
+class LessThanOrEqualsToSpecification[T](FieldSpecification[T, Any]):
     """Specification that matches objects whose field value is less than or equal to the bound value."""
 
     description = "Matches when rgetattr(obj, field) <= value."
@@ -130,7 +127,7 @@ class LessThanOrEqualsToSpecification(FieldSpecification[T, Any]):
         return rgetattr(obj, self.field) <= self.value
 
 
-class FunctionSpecification(FieldSpecification[T, Any]):
+class FunctionSpecification[T](FieldSpecification[T, Any]):
     """Specification that evaluates a user-provided predicate against (obj, field, value)."""
 
     description = "Matches when func(obj, field, value) returns True."
@@ -163,7 +160,7 @@ class FunctionSpecification(FieldSpecification[T, Any]):
         return self.func(obj, self.field, self.value)
 
 
-class InListSpecification(FieldSpecification[T, Sequence[Any]]):
+class InListSpecification[T](FieldSpecification[T, Sequence[Any]]):
     """Specification that checks membership of the field value in the bound sequence."""
 
     description = "Matches when rgetattr(obj, field) in value."
@@ -180,7 +177,7 @@ class InListSpecification(FieldSpecification[T, Sequence[Any]]):
         return rgetattr(obj, self.field) in self.value
 
 
-class NotInListSpecification(FieldSpecification[T, Sequence[Any]]):
+class NotInListSpecification[T](FieldSpecification[T, Sequence[Any]]):
     """Specification that checks non-membership of the field value in the bound sequence."""
 
     description = "Matches when rgetattr(obj, field) not in value."
@@ -197,7 +194,7 @@ class NotInListSpecification(FieldSpecification[T, Sequence[Any]]):
         return rgetattr(obj, self.field) not in self.value
 
 
-class SubListSpecification(FieldSpecification[T, Sequence[Any]]):
+class SubListSpecification[T](FieldSpecification[T, Sequence[Any]]):
     """Specification that checks if the bound sequence is a subset of the object's field sequence."""
 
     description = "Matches when set(value) ⊆ set(rgetattr(obj, field))."
@@ -214,7 +211,7 @@ class SubListSpecification(FieldSpecification[T, Sequence[Any]]):
         return set(self.value).issubset(set(rgetattr(obj, self.field)))
 
 
-class NotSubListSpecification(FieldSpecification[T, Sequence[Any]]):
+class NotSubListSpecification[T](FieldSpecification[T, Sequence[Any]]):
     """Specification that checks that the bound sequence is not a subset of the object's field sequence."""
 
     description = "Matches when set(value) ⊄ set(rgetattr(obj, field))."
@@ -231,7 +228,7 @@ class NotSubListSpecification(FieldSpecification[T, Sequence[Any]]):
         return not set(self.value).issubset(set(rgetattr(obj, self.field)))
 
 
-class LikeSpecification(FieldSpecification[T, str]):
+class LikeSpecification[T](FieldSpecification[T, str]):
     """Specification that performs a SQL-like pattern match (case-sensitive) using % as a wildcard."""
 
     description = "Matches when field string satisfies LIKE pattern in value (case-sensitive, % → .*, dots escaped)."
@@ -248,7 +245,7 @@ class LikeSpecification(FieldSpecification[T, str]):
         return re_match(self.value.replace("%", ".*").replace(".", r"\."), rgetattr(obj, self.field)) is not None
 
 
-class NotLikeSpecification(LikeSpecification[T]):
+class NotLikeSpecification[T](LikeSpecification[T]):
     """Specification that negates LikeSpecification."""
 
     description = "Matches when LikeSpecification does not match."
@@ -265,7 +262,7 @@ class NotLikeSpecification(LikeSpecification[T]):
         return not super().is_satisfied_by(obj)
 
 
-class ILikeSpecification(FieldSpecification[T, str]):
+class ILikeSpecification[T](FieldSpecification[T, str]):
     """Specification that performs a case-insensitive SQL-like match by lowercasing the field value."""
 
     description = "Matches when lower(field) satisfies LIKE pattern in value (case-insensitive)."
@@ -284,7 +281,7 @@ class ILikeSpecification(FieldSpecification[T, str]):
         )
 
 
-class NotILikeSpecification(ILikeSpecification[T]):
+class NotILikeSpecification[T](ILikeSpecification[T]):
     """Specification that negates ILikeSpecification."""
 
     description = "Matches when ILikeSpecification does not match."
@@ -301,7 +298,7 @@ class NotILikeSpecification(ILikeSpecification[T]):
         return not super().is_satisfied_by(obj)
 
 
-class IsNoneSpecification(FieldSpecification[T, bool]):
+class IsNoneSpecification[T](FieldSpecification[T, bool]):
     """Specification that checks None-ness per a boolean flag (True → is None; False → is not None)."""
 
     description = "True means field must be None; False means field must not be None."
@@ -321,7 +318,7 @@ class IsNoneSpecification(FieldSpecification[T, bool]):
         return (rgetattr(obj, self.field) is None) if self.value else (rgetattr(obj, self.field) is not None)
 
 
-class IsNotNoneSpecification(FieldSpecification[T, bool]):
+class IsNotNoneSpecification[T](FieldSpecification[T, bool]):
     """Specification that checks not-None-ness per a boolean flag (True → is not None; False → is None)."""
 
     description = "True means field must not be None; False means field must be None."

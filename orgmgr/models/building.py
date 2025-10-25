@@ -1,15 +1,19 @@
 """Building model."""
 
-from typing import Self
+from typing import TYPE_CHECKING, Self
 from uuid import uuid4
 
 from sqlalchemy import Float, String, Uuid as SqlUUID
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from orgmgr.core.entities.building import Building
 from orgmgr.core.types import BuildingId
 from orgmgr.lib.entities.coordinate import Coordinate
 from orgmgr.lib.models import BaseModel
+
+
+if TYPE_CHECKING:
+    from orgmgr.models import OrganizationModel
 
 
 class BuildingModel(BaseModel[Building]):
@@ -28,6 +32,10 @@ class BuildingModel(BaseModel[Building]):
 
     longitude: Mapped[float] = mapped_column("longitude", Float(), nullable=False)
     """Building longitude."""
+
+    organizations: Mapped[list["OrganizationModel"]] = relationship(
+        "OrganizationModel", back_populates="building", cascade="all, delete-orphan"
+    )
 
     @classmethod
     def from_entity(cls, entity: Building) -> Self:

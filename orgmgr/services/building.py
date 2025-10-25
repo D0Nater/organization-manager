@@ -15,10 +15,7 @@ from orgmgr.lib.specification.sort import SortSpecification
 class BuildingService:
     """Service layer for managing building entities."""
 
-    def __init__(
-        self,
-        building_repository: BuildingRepository,
-    ):
+    def __init__(self, building_repository: BuildingRepository):
         """Initializes the BuildingService with a repository and an action handler for building operations.
 
         Args:
@@ -34,9 +31,6 @@ class BuildingService:
 
         Returns:
             Building: The newly created building entity.
-
-        Raises:
-            BuildingNotFoundError: If the parent building does not exist.
         """
         return await self._building_repository.create(entity)
 
@@ -87,9 +81,6 @@ class BuildingService:
 
         Returns:
             Building: The updated building entity.
-
-        Raises:
-            BuildingNotFoundError: If the specified parent building does not exist.
         """
         return await self._building_repository.update(entity)
 

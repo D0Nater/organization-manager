@@ -145,7 +145,7 @@ def get_openapi(
             # Iterate over parameters and remove additional fields
             for parameter in method.get("parameters", []):
                 if parameter["in"] == "query":
-                    for field in ["specification"]:
+                    for field in ["specification", "filter"]:
                         if field in parameter["schema"]:
                             parameter["schema"].pop(field)
     # Remove methods that were excluded
