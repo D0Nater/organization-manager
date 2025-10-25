@@ -1,13 +1,14 @@
 """Organization endpoints."""
 
 from dishka.integrations.fastapi import DishkaRoute, FromDishka
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from pyfa_converter_v2 import QueryDepends
 
 from orgmgr.core.exceptions.activity import ActivityNotFoundError
 from orgmgr.core.exceptions.building import BuildingNotFoundError
 from orgmgr.core.exceptions.organization import OrganizationNotFoundError
 from orgmgr.core.types import OrganizationId
+from orgmgr.dependencies.auth import require_auth
 from orgmgr.lib.entities.page import PaginationInfo
 from orgmgr.lib.schemas.pagination import PaginationRequest
 from orgmgr.lib.utils.openapi import exc_list
@@ -22,7 +23,12 @@ from orgmgr.schemas.organization import (
 from orgmgr.services import OrganizationService
 
 
-router = APIRouter(tags=["organizations"], prefix="/organizations", route_class=DishkaRoute)
+router = APIRouter(
+    tags=["organizations"],
+    prefix="/organizations",
+    route_class=DishkaRoute,
+    dependencies=[Depends(require_auth())],
+)
 
 
 @router.post(

@@ -3,6 +3,7 @@
 from pydantic import Field
 
 from orgmgr.lib.configs import (
+    AuthConfig,
     BaseConfig,
     IdempotencyConfig,
     RedisConfig,
@@ -16,6 +17,7 @@ class AppConfig(BaseConfig):
     """Application configuration."""
 
     server: ServerConfig = Field(default_factory=ServerConfig)
+    auth: AuthConfig = Field(default_factory=AuthConfig)
     idempotency: IdempotencyConfig = Field(default_factory=IdempotencyConfig)
     database: SQLAlchemyConfig
     redis: RedisConfig

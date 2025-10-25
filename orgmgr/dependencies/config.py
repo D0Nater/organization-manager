@@ -3,9 +3,7 @@
 from dishka import Provider, Scope, provide
 
 from orgmgr.config import AppConfig
-from orgmgr.lib.configs.idempotency import IdempotencyConfig
-from orgmgr.lib.configs.redis import RedisConfig
-from orgmgr.lib.configs.sqlalchemy import SQLAlchemyConfig
+from orgmgr.lib.configs import AuthConfig, IdempotencyConfig, RedisConfig, SQLAlchemyConfig
 
 
 class ConfigProvider(Provider):
@@ -19,6 +17,18 @@ class ConfigProvider(Provider):
             AppConfig: The main application configuration object.
         """
         return AppConfig.from_env()
+
+    @provide(scope=Scope.APP)
+    def auth_config(self, app_config: AppConfig) -> AuthConfig:
+        """Provides the auth configuration from the application config.
+
+        Args:
+            app_config (AppConfig): The main application configuration.
+
+        Returns:
+            AuthConfig: The auth configuration.
+        """
+        return app_config.auth
 
     @provide(scope=Scope.APP)
     def idempotency_config(self, app_config: AppConfig) -> IdempotencyConfig:
