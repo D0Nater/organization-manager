@@ -13,7 +13,7 @@ class PaginationInfo:
     """
 
     page: int
-    per_page: int
+    per_page: int | None
 
 
 @dataclass
@@ -37,6 +37,8 @@ class Page[T](PaginationInfo):
         Returns:
             int: Total number of pages.
         """
+        if self.per_page is None:
+            return 1
         return (self.total + self.per_page - 1) // self.per_page
 
     @property

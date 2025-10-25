@@ -1,4 +1,4 @@
-"""Activity repository."""
+"""Building repository."""
 
 from collections.abc import Sequence
 from typing import Any, Protocol

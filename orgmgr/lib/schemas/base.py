@@ -7,7 +7,8 @@ from typing import Any, Self, TypeVar
 from pydantic import BaseModel, ConfigDict
 from pydantic.config import JsonDict
 
-from orgmgr.lib.specification.base import ValueSpecification
+from orgmgr.lib.filters.sa_base import BaseSQLAlchemyFilter
+from orgmgr.lib.specification.base import CustomSpecification
 from orgmgr.lib.specification.field import FieldSpecification
 from orgmgr.lib.specification.sort import SortSpecification
 
@@ -104,14 +105,29 @@ class BaseEntityUpdateSchema[T](BaseSchema):
 class BaseFilterSchema(BaseSchema):
     """Base filter schema."""
 
-    def to_specifications(self) -> list[ValueSpecification[Any, Any]]:
-        """Convert schema fields with ValueSpecification into a list of specifications with assigned values.
+    def to_filters(self) -> list[BaseSQLAlchemyFilter[Any]]:
+        """Convert schema fields marked with a BaseSQLAlchemyFilter into a list of initialized filter objects.
 
         Returns:
-            list[ValueSpecification[BaseSchema, Any]]: A list of field specifications built from the schema.
+            list[BaseSQLAlchemyFilter[Any]]: A list of initialized BaseSQLAlchemyFilter instances based on set fields.
+        """
+        filters = list[BaseSQLAlchemyFilter[Any]]()
+
+        for field_name, field_info in self.iterate_set_fields_info():
+            field_filter: Any = field_info.get("filter", None)
+            if issubclass(field_filter, BaseSQLAlchemyFilter):
+                filters.append(field_filter(getattr(self, field_name)))
+
+        return filters
+
+    def to_specifications(self) -> list[CustomSpecification[Any, Any]]:
+        """Convert schema fields with CustomSpecification into a list of specifications with assigned values.
+
+        Returns:
+            list[CustomSpecification[BaseSchema, Any]]: A list of field specifications built from the schema.
         """
         return self._collect_specs(
-            ValueSpecification,  # type: ignore[type-abstract]
+            CustomSpecification,  # type: ignore[type-abstract]
             lambda spec, value: spec.new_with_value(value),
         )
 
