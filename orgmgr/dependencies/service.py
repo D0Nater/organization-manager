@@ -10,11 +10,24 @@ from orgmgr.implementations.repositories import (
     SAOrganizationActivityRepository,
     SAOrganizationRepository,
 )
-from orgmgr.services import ActivityService, BuildingService, OrganizationService
+from orgmgr.lib.configs import AuthConfig
+from orgmgr.services import ActivityService, AuthService, BuildingService, OrganizationService
 
 
 class ServiceProvider(FastapiProvider):
     """Provider for service layer instances."""
+
+    @provide(scope=Scope.REQUEST)
+    def auth_service(self, auth_config: AuthConfig) -> AuthService:
+        """Provides the AuthService.
+
+        Args:
+            auth_config (AuthConfig): AuthConfig instance for auth.
+
+        Returns:
+            AuthService: A service instance for handling auth logic.
+        """
+        return AuthService(auth_config)
 
     @provide(scope=Scope.REQUEST)
     def activity_service(

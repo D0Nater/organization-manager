@@ -1,5 +1,6 @@
 """Module containing configs."""
 
+from .auth import AuthConfig
 from .base import BaseConfig
 from .idempotency import IdempotencyConfig
 from .redis import RedisConfig
@@ -10,6 +11,7 @@ from .sqlalchemy import SQLAlchemyConfig
 
 __all__ = [
     "BaseConfig",
+    "AuthConfig",
     "IdempotencyConfig",
     "RedisConfig",
     "SentryConfig",
