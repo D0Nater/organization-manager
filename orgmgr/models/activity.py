@@ -32,7 +32,7 @@ class ActivityModel(BaseModel[Activity]):
         """Convert a Activity domain entity into a ActivityModel instance.
 
         Args:
-            entity (Activity): The building domain entity.
+            entity (Activity): The activity domain entity.
 
         Returns:
             Self: The corresponding SQLAlchemy model instance.

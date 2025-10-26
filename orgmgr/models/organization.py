@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 
 
 class OrganizationModel(BaseModel[Organization]):
-    """SQLAlchemy-модель, представляющая таблицу организаций."""
+    """SQLAlchemy model representing the organization table."""
 
     __tablename__ = "organizations"
 
@@ -46,7 +46,7 @@ class OrganizationModel(BaseModel[Organization]):
         """Convert a Organization domain entity into a OrganizationModel instance.
 
         Args:
-            entity (Organization): The building domain entity.
+            entity (Organization): The organization domain entity.
 
         Returns:
             Self: The corresponding SQLAlchemy model instance.

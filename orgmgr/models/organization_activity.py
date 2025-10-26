@@ -11,7 +11,7 @@ from orgmgr.lib.models import BaseModel
 
 
 class OrganizationActivityModel(BaseModel[OrganizationActivity]):
-    """SQLAlchemy-модель для связи Organization ↔ Activity."""
+    """SQLAlchemy is a model for communication Organization - Activity."""
 
     __tablename__ = "organization_activities"
 
@@ -27,14 +27,25 @@ class OrganizationActivityModel(BaseModel[OrganizationActivity]):
 
     @classmethod
     def from_entity(cls, entity: OrganizationActivity) -> Self:
-        """Преобразует доменную сущность в SQLAlchemy-модель."""
+        """Convert a OrganizationActivity domain entity into a OrganizationActivityModel instance.
+
+        Args:
+            entity (OrganizationActivity): The organization activity domain entity.
+
+        Returns:
+            Self: The corresponding SQLAlchemy model instance.
+        """
         return cls(
             organization_id=entity.organization_id,
             activity_id=entity.activity_id,
         )
 
     def to_entity(self) -> OrganizationActivity:
-        """Преобразует SQLAlchemy-модель в доменную сущность."""
+        """Convert the OrganizationActivityModel instance into a OrganizationActivity domain entity.
+
+        Returns:
+            OrganizationActivity: The corresponding domain entity.
+        """
         return OrganizationActivity(
             organization_id=self.organization_id,
             activity_id=self.activity_id,
