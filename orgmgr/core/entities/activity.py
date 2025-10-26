@@ -12,7 +12,7 @@ MAX_NESTING_LEVEL: int = 3
 
 @dataclass
 class Activity:
-    """Domain entity representing a activity."""
+    """Domain entity representing an activity."""
 
     activity_id: ActivityId
     parent_id: ActivityId | None

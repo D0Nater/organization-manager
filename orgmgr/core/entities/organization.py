@@ -10,7 +10,7 @@ from orgmgr.lib.entities.phone_number import PhoneNumber
 
 @dataclass
 class Organization:
-    """Domain entity representing a organization."""
+    """Domain entity representing an organization."""
 
     organization_id: OrganizationId
     building_id: BuildingId
