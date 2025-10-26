@@ -5,6 +5,7 @@ from typing import Any
 
 from orgmgr.core.entities.building import Building
 from orgmgr.core.exceptions.building import BuildingNotFoundError
+from orgmgr.core.interfaces.queries.building import BuildingQuery
 from orgmgr.core.interfaces.repositories.building import BuildingRepository
 from orgmgr.core.types import BuildingId
 from orgmgr.lib.entities.page import Page, PaginationInfo
@@ -15,13 +16,15 @@ from orgmgr.lib.specification.sort import SortSpecification
 class BuildingService:
     """Service layer for managing building entities."""
 
-    def __init__(self, building_repository: BuildingRepository):
+    def __init__(self, building_repository: BuildingRepository, building_query: BuildingQuery):
         """Initializes the BuildingService with a repository and an action handler for building operations.
 
         Args:
             building_repository (BuildingRepository): Repository for building persistence.
+            building_query (BuildingQuery): Query for building entities.
         """
         self._building_repository = building_repository
+        self._building_query = building_query
 
     async def create(self, entity: Building) -> Building:
         """Creates a new building entity after validating its parent existence and nesting constraints.
@@ -52,7 +55,7 @@ class BuildingService:
         Returns:
             Page[Building]: Paginated items with total count and page metadata.
         """
-        return await self._building_repository.get_page(pagination, specifications, sort_specifications)
+        return await self._building_query.get_page(pagination, specifications, sort_specifications)
 
     async def get_by_id(self, building_id: BuildingId) -> Building:
         """Retrieve a single building entity by its ID.

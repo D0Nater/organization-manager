@@ -6,6 +6,7 @@ from typing import Any
 from orgmgr.core.entities.activity import Activity
 from orgmgr.core.exceptions.activity import ActivityNotFoundError
 from orgmgr.core.interfaces.actions.activity import ActivityAction
+from orgmgr.core.interfaces.queries.activity import ActivityQuery
 from orgmgr.core.interfaces.repositories.activity import ActivityRepository
 from orgmgr.core.types import ActivityId
 from orgmgr.lib.entities.page import Page, PaginationInfo
@@ -16,14 +17,18 @@ from orgmgr.lib.specification.sort import SortSpecification
 class ActivityService:
     """Service layer for managing activity entities."""
 
-    def __init__(self, activity_repository: ActivityRepository, activity_action: ActivityAction):
+    def __init__(
+        self, activity_repository: ActivityRepository, activity_query: ActivityQuery, activity_action: ActivityAction
+    ):
         """Initializes the ActivityService with a repository and an action handler for activity operations.
 
         Args:
             activity_repository (ActivityRepository): Repository for activity persistence.
+            activity_query (ActivityQuery): Query for activity entities.
             activity_action (ActivityAction): Action handler containing domain-level activity validations.
         """
         self._activity_repository = activity_repository
+        self._activity_query = activity_query
         self._activity_action = activity_action
 
     async def create(self, entity: Activity) -> Activity:
@@ -63,7 +68,7 @@ class ActivityService:
         Returns:
             Page[Activity]: Paginated items with total count and page metadata.
         """
-        return await self._activity_repository.get_page(pagination, specifications, sort_specifications)
+        return await self._activity_query.get_page(pagination, specifications, sort_specifications)
 
     async def get_by_id(self, activity_id: ActivityId) -> Activity:
         """Retrieve a single activity entity by its ID.

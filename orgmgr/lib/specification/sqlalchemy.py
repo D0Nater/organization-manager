@@ -7,7 +7,7 @@ from sqlalchemy import Select, not_, or_
 from sqlalchemy.orm import DeclarativeBase, InstrumentedAttribute
 
 from orgmgr.lib.enums.sort import OrderByType
-from orgmgr.lib.filters.sa_base import BaseSQLAlchemyFilter
+from orgmgr.lib.filters.base import BaseFilter
 from orgmgr.lib.specification.field import (
     EqualsSpecification,
     FieldSpecification,
@@ -124,13 +124,13 @@ def add_sort_specifications_to_query[SelectType: Any](
 
 
 def add_filters_to_query[SelectType: Any](
-    query: Select[SelectType], filters: Sequence[BaseSQLAlchemyFilter[Any]]
+    query: Select[SelectType], filters: Sequence[BaseFilter[Any, Select[SelectType]]]
 ) -> Select[SelectType]:
     """Adds a sequence of filters to a SQLAlchemy query and returns the modified query.
 
     Args:
         query (Select[Any]): The base SQLAlchemy query object to which filters will be added.
-        filters (Sequence[BaseSQLAlchemyFilter[Any]]): A sequence of filter objects to apply.
+        filters (Sequence[BaseFilter[Any, Select[SelectType]]]): A sequence of filter objects to apply.
 
     Returns:
         Select[Any]: The query object with all specified filters applied.

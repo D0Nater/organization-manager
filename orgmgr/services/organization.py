@@ -7,7 +7,8 @@ from orgmgr.core.entities.organization import Organization
 from orgmgr.core.exceptions.activity import ActivityNotFoundError
 from orgmgr.core.exceptions.building import BuildingNotFoundError
 from orgmgr.core.exceptions.organization import OrganizationNotFoundError
-from orgmgr.core.interfaces.repositories.activity import ActivityRepository
+from orgmgr.core.interfaces.queries.activity import ActivityQuery
+from orgmgr.core.interfaces.queries.organization import OrganizationQuery
 from orgmgr.core.interfaces.repositories.building import BuildingRepository
 from orgmgr.core.interfaces.repositories.organization import OrganizationRepository
 from orgmgr.core.interfaces.repositories.organization_activity import OrganizationActivityRepository
@@ -24,22 +25,25 @@ class OrganizationService:
     def __init__(
         self,
         organization_repository: OrganizationRepository,
+        organization_query: OrganizationQuery,
         building_repository: BuildingRepository,
-        activity_repository: ActivityRepository,
+        activity_query: ActivityQuery,
         organization_activity_repository: OrganizationActivityRepository,
     ):
         """Initializes the OrganizationService with a repository and an action handler for organization operations.
 
         Args:
             organization_repository (OrganizationRepository): Repository for organization persistence.
+            organization_query (OrganizationQuery): Query for organization entities.
             building_repository (BuildingRepository): Repository for building persistence.
-            activity_repository (ActivityRepository): Repository for activity persistence.
+            activity_query (ActivityQuery): Query for activity entities.
             organization_activity_repository (OrganizationActivityRepository): Repository for
                 organization activity persistence.
         """
         self._organization_repository = organization_repository
+        self._organization_query = organization_query
         self._building_repository = building_repository
-        self._activity_repository = activity_repository
+        self._activity_query = activity_query
         self._organization_activity_repository = organization_activity_repository
 
     async def create(self, entity: Organization) -> Organization:
@@ -84,7 +88,7 @@ class OrganizationService:
         Returns:
             Page[Organization]: Paginated items with total count and page metadata.
         """
-        return await self._organization_repository.get_page(pagination, specifications, sort_specifications, filters)
+        return await self._organization_query.get_page(pagination, specifications, sort_specifications, filters)
 
     async def get_by_id(self, organization_id: OrganizationId) -> Organization:
         """Retrieve a single organization entity by its ID.
@@ -177,9 +181,9 @@ class OrganizationService:
             return
 
         spec = InListSpecification[Any]("id", activity_ids)
-        existing_count = await self._activity_repository.get_count([spec])
+        existing_count = await self._activity_query.get_count([spec])
         if existing_count != len(activity_ids):
-            found = await self._activity_repository.get_list(
+            found = await self._activity_query.get_list(
                 pagination=PaginationInfo(page=1, per_page=None), specifications=[spec]
             )
             found_ids = {a.activity_id for a in found}
