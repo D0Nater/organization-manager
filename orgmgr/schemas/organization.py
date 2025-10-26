@@ -47,7 +47,14 @@ class OrganizationSchema(BaseOrganizationSchema, BaseEntitySchema[Organization])
 
     @classmethod
     def from_entity(cls, entity: Organization) -> Self:
-        """Convert a Organization domain entity into a OrganizationSchema."""
+        """Convert a Organization domain entity into a OrganizationSchema.
+
+        Args:
+            entity (Organization): The organization domain entity.
+
+        Returns:
+            Self: The corresponding schema instance.
+        """
         return cls(
             id=entity.organization_id,
             name=entity.name,
@@ -61,7 +68,11 @@ class OrganizationCreateSchema(BaseOrganizationSchema, BaseEntityCreateSchema[Or
     """Organization create schema."""
 
     def to_entity(self, **kwargs: Any) -> Organization:
-        """Convert this schema into a new Organization domain entity."""
+        """Convert the OrganizationCreateSchema into a Organization domain entity.
+
+        Returns:
+            Organization: A new organization entity created from the schema data.
+        """
         phone_numbers = list(map(PhoneNumber, self.phone_numbers))
         return Organization.create(phone_numbers=phone_numbers, **self.model_dump(exclude={"phone_numbers"}) | kwargs)
 
