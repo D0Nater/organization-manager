@@ -10,8 +10,7 @@ from orgmgr.core.exceptions.organization import OrganizationNotFoundError
 from orgmgr.core.interfaces.queries.activity import ActivityQuery
 from orgmgr.core.interfaces.queries.organization import OrganizationQuery
 from orgmgr.core.interfaces.repositories.building import BuildingRepository
-from orgmgr.core.interfaces.repositories.organization import OrganizationRepository
-from orgmgr.core.interfaces.repositories.organization_activity import OrganizationActivityRepository
+from orgmgr.core.interfaces.uow.organization import OrganizationUnitOfWork
 from orgmgr.core.types import ActivityId, BuildingId, OrganizationId
 from orgmgr.lib.entities.page import Page, PaginationInfo
 from orgmgr.lib.filters.base import BaseFilter
@@ -24,27 +23,23 @@ class OrganizationService:
 
     def __init__(
         self,
-        organization_repository: OrganizationRepository,
+        organization_uow: OrganizationUnitOfWork,
         organization_query: OrganizationQuery,
         building_repository: BuildingRepository,
         activity_query: ActivityQuery,
-        organization_activity_repository: OrganizationActivityRepository,
     ):
         """Initializes the OrganizationService with a repository and an action handler for organization operations.
 
         Args:
-            organization_repository (OrganizationRepository): Repository for organization persistence.
+            organization_uow (OrganizationUnitOfWork): Organization Unit of Work.
             organization_query (OrganizationQuery): Query for organization entities.
             building_repository (BuildingRepository): Repository for building persistence.
             activity_query (ActivityQuery): Query for activity entities.
-            organization_activity_repository (OrganizationActivityRepository): Repository for
-                organization activity persistence.
         """
-        self._organization_repository = organization_repository
+        self._organization_uow = organization_uow
         self._organization_query = organization_query
         self._building_repository = building_repository
         self._activity_query = activity_query
-        self._organization_activity_repository = organization_activity_repository
 
     async def create(self, entity: Organization) -> Organization:
         """Creates a new organization entity after validating its parent existence and nesting constraints.
@@ -60,11 +55,14 @@ class OrganizationService:
         await self._validate_building_exists(entity.building_id)
         await self._validate_activities_exist(activity_ids)
 
-        created = await self._organization_repository.create(entity)
-        created.activity_ids = activity_ids
+        async with self._organization_uow:
+            created = await self._organization_uow.organization_repository.create(entity)
+            created.activity_ids = activity_ids
 
-        if activity_ids:
-            await self._organization_activity_repository.create(created.organization_id, activity_ids)
+            if activity_ids:
+                await self._organization_uow.organization_activity_repository.create(
+                    created.organization_id, activity_ids
+                )
 
         return created
 
@@ -102,7 +100,7 @@ class OrganizationService:
         Raises:
             OrganizationNotFoundError: If no organization exists with the given ID.
         """
-        organization = await self._organization_repository.get_by_id(organization_id)
+        organization = await self._organization_uow.organization_repository.get_by_id(organization_id)
 
         if organization is None:
             raise OrganizationNotFoundError(organization_id=organization_id)
@@ -123,13 +121,18 @@ class OrganizationService:
         await self._validate_building_exists(entity.building_id)
         await self._validate_activities_exist(activity_ids)
 
-        saved = await self._organization_repository.update(entity)
-        saved.activity_ids = activity_ids
+        async with self._organization_uow:
+            saved = await self._organization_uow.organization_repository.update(entity)
+            saved.activity_ids = activity_ids
 
-        if activity_ids:
-            await self._organization_activity_repository.delete(organization_id=saved.organization_id)
             if activity_ids:
-                await self._organization_activity_repository.create(saved.organization_id, activity_ids)
+                await self._organization_uow.organization_activity_repository.delete(
+                    organization_id=saved.organization_id
+                )
+                if activity_ids:
+                    await self._organization_uow.organization_activity_repository.create(
+                        saved.organization_id, activity_ids
+                    )
 
         return saved
 
@@ -146,8 +149,10 @@ class OrganizationService:
             OrganizationNotFoundError: If no organization exists with the given ID.
         """
         organization = await self.get_by_id(organization_id)
-        await self._organization_activity_repository.delete(organization_id=organization_id)
-        await self._organization_repository.delete(organization.organization_id)
+
+        async with self._organization_uow:
+            await self._organization_uow.organization_activity_repository.delete(organization_id=organization_id)
+            await self._organization_uow.organization_repository.delete(organization.organization_id)
 
     async def _validate_building_exists(self, building_id: BuildingId) -> None:
         """Validates that a building with the given ID exists.
