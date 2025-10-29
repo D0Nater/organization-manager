@@ -5,12 +5,8 @@ from dishka.integrations.fastapi import FastapiProvider
 
 from orgmgr.implementations.actions import SAActivityAction
 from orgmgr.implementations.queries import SAActivityQuery, SABuildingQuery, SAOrganizationQuery
-from orgmgr.implementations.repositories import (
-    SAActivityRepository,
-    SABuildingRepository,
-    SAOrganizationActivityRepository,
-    SAOrganizationRepository,
-)
+from orgmgr.implementations.repositories import SAActivityRepository, SABuildingRepository
+from orgmgr.implementations.uow import SAOrganizationUnitOfWork
 from orgmgr.lib.configs import AuthConfig
 from orgmgr.services import ActivityService, AuthService, BuildingService, OrganizationService
 
@@ -67,29 +63,25 @@ class ServiceProvider(FastapiProvider):
     @provide(scope=Scope.REQUEST)
     def organization_service(
         self,
-        organization_repository: SAOrganizationRepository,
+        organization_uow: SAOrganizationUnitOfWork,
         organization_query: SAOrganizationQuery,
         building_repository: SABuildingRepository,
         activity_query: SAActivityQuery,
-        organization_activity_repository: SAOrganizationActivityRepository,
     ) -> OrganizationService:
         """Provides the OrganizationService for managing organizations.
 
         Args:
-            organization_repository (SAOrganizationRepository): Repository instance for organization entities.
+            organization_uow (SAOrganizationUnitOfWork): Organization Unit of Work instance.
             organization_query (SAOrganizationQuery): Query instance for organization entities.
             building_repository (SABuildingRepository): Repository instance for building entities.
             activity_query (SAActivityQuery): Query instance for activity entities.
-            organization_activity_repository (SAOrganizationActivityRepository): Repository instance
-                for organization activity entities.
 
         Returns:
             OrganizationService: A service instance for handling organization logic.
         """
         return OrganizationService(
-            organization_repository,
+            organization_uow,
             organization_query,
             building_repository,
             activity_query,
-            organization_activity_repository,
         )
