@@ -21,7 +21,7 @@ class Building:
         """Create a new building entity.
 
         Args:
-            address (str): The name of the building.
+            address (str): The address of the building.
             coordinate (Coordinate): The coordinate of the building.
 
         Returns:
