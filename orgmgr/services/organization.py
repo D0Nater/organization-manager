@@ -14,7 +14,7 @@ from orgmgr.core.interfaces.repositories.organization import OrganizationReposit
 from orgmgr.core.interfaces.repositories.organization_activity import OrganizationActivityRepository
 from orgmgr.core.types import ActivityId, BuildingId, OrganizationId
 from orgmgr.lib.entities.page import Page, PaginationInfo
-from orgmgr.lib.filters.sa_base import BaseSQLAlchemyFilter
+from orgmgr.lib.filters.base import BaseFilter
 from orgmgr.lib.specification.field import FieldSpecification, InListSpecification
 from orgmgr.lib.specification.sort import SortSpecification
 
@@ -73,7 +73,7 @@ class OrganizationService:
         pagination: PaginationInfo,
         specifications: Sequence[FieldSpecification[Any, Any]] | None = None,
         sort_specifications: Sequence[SortSpecification] | None = None,
-        filters: Sequence[BaseSQLAlchemyFilter[Any]] | None = None,
+        filters: Sequence[BaseFilter[Any, Any]] | None = None,
     ) -> Page[Organization]:
         """Retrieve a paginated list of organization entities matching optional specifications.
 
@@ -83,7 +83,7 @@ class OrganizationService:
                 Defaults to None.
             sort_specifications (Sequence[SortSpecification] | None): Optional sort specifications.
                 Defaults to None.
-            filters (Sequence[BaseSQLAlchemyFilter[Any]] | None): Filter to apply. Defaults to None.
+            filters (Sequence[BaseFilter[Any, Any]] | None): Filter to apply. Defaults to None.
 
         Returns:
             Page[Organization]: Paginated items with total count and page metadata.
