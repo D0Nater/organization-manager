@@ -125,9 +125,7 @@ class OrganizationService:
             saved = await self._organization_uow.organization_repository.update(entity)
             saved.activity_ids = activity_ids
 
-            await self._organization_uow.organization_activity_repository.delete(
-                organization_id=saved.organization_id
-            )
+            await self._organization_uow.organization_activity_repository.delete(organization_id=saved.organization_id)
             if activity_ids:
                 await self._organization_uow.organization_activity_repository.create(
                     saved.organization_id, activity_ids
