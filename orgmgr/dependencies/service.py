@@ -3,10 +3,10 @@
 from dishka import Scope, provide
 from dishka.integrations.fastapi import FastapiProvider
 
-from orgmgr.implementations.actions import SAActivityAction
 from orgmgr.implementations.queries import SAActivityQuery, SABuildingQuery, SAOrganizationQuery
 from orgmgr.implementations.repositories import SAActivityRepository, SABuildingRepository
 from orgmgr.implementations.uow import SAOrganizationUnitOfWork
+from orgmgr.implementations.validators import SAActivityValidator
 from orgmgr.lib.configs import AuthConfig
 from orgmgr.services import ActivityService, AuthService, BuildingService, OrganizationService
 
@@ -31,19 +31,19 @@ class ServiceProvider(FastapiProvider):
         self,
         activity_repository: SAActivityRepository,
         activity_query: SAActivityQuery,
-        activity_action: SAActivityAction,
+        activity_validator: SAActivityValidator,
     ) -> ActivityService:
         """Provides the ActivityService for managing activities.
 
         Args:
             activity_repository (SAActivityRepository): Repository instance for activity entities.
             activity_query (SAActivityQuery): Query instance for activity entities.
-            activity_action (SAActivityAction): Action instance for activity entities.
+            activity_validator (SAActivityValidator): Validator instance for activity entities.
 
         Returns:
             ActivityService: A service instance for handling activity logic.
         """
-        return ActivityService(activity_repository, activity_query, activity_action)
+        return ActivityService(activity_repository, activity_query, activity_validator)
 
     @provide(scope=Scope.REQUEST)
     def building_service(

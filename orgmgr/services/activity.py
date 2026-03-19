@@ -4,10 +4,9 @@ from collections.abc import Sequence
 from typing import Any
 
 from orgmgr.core.entities.activity import Activity
-from orgmgr.core.exceptions.activity import ActivityNotFoundError
-from orgmgr.core.interfaces.actions.activity import ActivityAction
 from orgmgr.core.interfaces.queries.activity import ActivityQuery
 from orgmgr.core.interfaces.repositories.activity import ActivityRepository
+from orgmgr.core.interfaces.validators.activity import ActivityValidator
 from orgmgr.core.types import ActivityId
 from orgmgr.lib.entities.page import Page, PaginationInfo
 from orgmgr.lib.specification.field import FieldSpecification
@@ -18,18 +17,21 @@ class ActivityService:
     """Service layer for managing activity entities."""
 
     def __init__(
-        self, activity_repository: ActivityRepository, activity_query: ActivityQuery, activity_action: ActivityAction
+        self,
+        activity_repository: ActivityRepository,
+        activity_query: ActivityQuery,
+        activity_validator: ActivityValidator,
     ):
-        """Initializes the ActivityService with a repository and an action handler for activity operations.
+        """Initialize the activity service.
 
         Args:
             activity_repository (ActivityRepository): Repository for activity persistence.
             activity_query (ActivityQuery): Query for activity entities.
-            activity_action (ActivityAction): Action handler containing domain-level activity validations.
+            activity_validator (ActivityValidator): Validator ensuring activity existence and state.
         """
         self._activity_repository = activity_repository
         self._activity_query = activity_query
-        self._activity_action = activity_action
+        self._activity_validator = activity_validator
 
     async def create(self, entity: Activity) -> Activity:
         """Creates a new activity entity after validating its parent existence and nesting constraints.
@@ -45,8 +47,7 @@ class ActivityService:
             ActivityMaximumNestingError: If the activity exceeds the allowed nesting depth.
         """
         if parent_id := entity.parent_id:
-            await self.get_by_id(parent_id)
-            await self._activity_action.validate_nesting(parent_id)
+            await self._activity_validator.validate_nesting(parent_id)
 
         return await self._activity_repository.create(entity)
 
@@ -82,12 +83,7 @@ class ActivityService:
         Raises:
             ActivityNotFoundError: If no activity exists with the given ID.
         """
-        activity = await self._activity_repository.get_by_id(activity_id)
-
-        if activity is None:
-            raise ActivityNotFoundError(activity_id=activity_id)
-
-        return activity
+        return await self._activity_validator.ensure_exists(activity_id)
 
     async def update(self, entity: Activity) -> Activity:
         """Updates an existing activity entity after validating parent existence and nesting depth.
@@ -103,8 +99,7 @@ class ActivityService:
             ActivityMaximumNestingError: If the activity exceeds the allowed nesting depth.
         """
         if parent_id := entity.parent_id:
-            await self.get_by_id(parent_id)
-            await self._activity_action.validate_nesting(parent_id)
+            await self._activity_validator.validate_nesting(parent_id)
 
         return await self._activity_repository.update(entity)
 
@@ -120,5 +115,5 @@ class ActivityService:
         Raises:
             ActivityNotFoundError: If no activity exists with the given ID.
         """
-        activity = await self.get_by_id(activity_id)
+        activity = await self._activity_validator.ensure_exists(activity_id)
         await self._activity_repository.delete(activity.activity_id)
