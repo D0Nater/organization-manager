@@ -3,10 +3,10 @@
 from dishka import Scope, provide
 from dishka.integrations.fastapi import FastapiProvider
 
-from orgmgr.implementations.actions import SAActivityAction
 from orgmgr.implementations.queries import SAActivityQuery, SABuildingQuery, SAOrganizationQuery
 from orgmgr.implementations.repositories import SAActivityRepository, SABuildingRepository
 from orgmgr.implementations.uow import SAOrganizationUnitOfWork
+from orgmgr.implementations.validators import SAActivityValidator, SABuildingValidator, SAOrganizationValidator
 from orgmgr.lib.configs import AuthConfig
 from orgmgr.services import ActivityService, AuthService, BuildingService, OrganizationService
 
@@ -31,50 +31,56 @@ class ServiceProvider(FastapiProvider):
         self,
         activity_repository: SAActivityRepository,
         activity_query: SAActivityQuery,
-        activity_action: SAActivityAction,
+        activity_validator: SAActivityValidator,
     ) -> ActivityService:
         """Provides the ActivityService for managing activities.
 
         Args:
             activity_repository (SAActivityRepository): Repository instance for activity entities.
             activity_query (SAActivityQuery): Query instance for activity entities.
-            activity_action (SAActivityAction): Action instance for activity entities.
+            activity_validator (SAActivityValidator): Validator instance for activity entities.
 
         Returns:
             ActivityService: A service instance for handling activity logic.
         """
-        return ActivityService(activity_repository, activity_query, activity_action)
+        return ActivityService(activity_repository, activity_query, activity_validator)
 
     @provide(scope=Scope.REQUEST)
     def building_service(
-        self, building_repository: SABuildingRepository, building_query: SABuildingQuery
+        self,
+        building_repository: SABuildingRepository,
+        building_query: SABuildingQuery,
+        building_validator: SABuildingValidator,
     ) -> BuildingService:
         """Provides the BuildingService for managing buildings.
 
         Args:
             building_repository (SABuildingRepository): Repository instance for building entities.
             building_query (SABuildingQuery): Query instance for building entities.
+            building_validator (SABuildingValidator): Validator instance for building entities.
 
         Returns:
             BuildingService: A service instance for handling building logic.
         """
-        return BuildingService(building_repository, building_query)
+        return BuildingService(building_repository, building_query, building_validator)
 
     @provide(scope=Scope.REQUEST)
     def organization_service(
         self,
         organization_uow: SAOrganizationUnitOfWork,
         organization_query: SAOrganizationQuery,
-        building_repository: SABuildingRepository,
-        activity_query: SAActivityQuery,
+        organization_validator: SAOrganizationValidator,
+        building_validator: SABuildingValidator,
+        activity_validator: SAActivityValidator,
     ) -> OrganizationService:
         """Provides the OrganizationService for managing organizations.
 
         Args:
             organization_uow (SAOrganizationUnitOfWork): Organization Unit of Work instance.
             organization_query (SAOrganizationQuery): Query instance for organization entities.
-            building_repository (SABuildingRepository): Repository instance for building entities.
-            activity_query (SAActivityQuery): Query instance for activity entities.
+            organization_validator (SAOrganizationValidator): Validator instance for building entities.
+            building_validator (SABuildingValidator): Validator instance for building entities.
+            activity_validator (SAActivityValidator): Validator instance for activity entities.
 
         Returns:
             OrganizationService: A service instance for handling organization logic.
@@ -82,6 +88,7 @@ class ServiceProvider(FastapiProvider):
         return OrganizationService(
             organization_uow,
             organization_query,
-            building_repository,
-            activity_query,
+            organization_validator,
+            building_validator,
+            activity_validator,
         )

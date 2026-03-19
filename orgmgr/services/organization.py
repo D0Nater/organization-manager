@@ -4,17 +4,15 @@ from collections.abc import Sequence
 from typing import Any
 
 from orgmgr.core.entities.organization import Organization
-from orgmgr.core.exceptions.activity import ActivityNotFoundError
-from orgmgr.core.exceptions.building import BuildingNotFoundError
-from orgmgr.core.exceptions.organization import OrganizationNotFoundError
-from orgmgr.core.interfaces.queries.activity import ActivityQuery
 from orgmgr.core.interfaces.queries.organization import OrganizationQuery
-from orgmgr.core.interfaces.repositories.building import BuildingRepository
 from orgmgr.core.interfaces.uow.organization import OrganizationUnitOfWork
-from orgmgr.core.types import ActivityId, BuildingId, OrganizationId
+from orgmgr.core.interfaces.validators.activity import ActivityValidator
+from orgmgr.core.interfaces.validators.building import BuildingValidator
+from orgmgr.core.interfaces.validators.organization import OrganizationValidator
+from orgmgr.core.types import OrganizationId
 from orgmgr.lib.entities.page import Page, PaginationInfo
 from orgmgr.lib.filters.base import BaseFilter
-from orgmgr.lib.specification.field import FieldSpecification, InListSpecification
+from orgmgr.lib.specification.field import FieldSpecification
 from orgmgr.lib.specification.sort import SortSpecification
 
 
@@ -25,21 +23,24 @@ class OrganizationService:
         self,
         organization_uow: OrganizationUnitOfWork,
         organization_query: OrganizationQuery,
-        building_repository: BuildingRepository,
-        activity_query: ActivityQuery,
+        organization_validator: OrganizationValidator,
+        building_validator: BuildingValidator,
+        activity_validator: ActivityValidator,
     ):
-        """Initializes the OrganizationService with a repository and an action handler for organization operations.
+        """Initialize the organization service.
 
         Args:
             organization_uow (OrganizationUnitOfWork): Organization Unit of Work.
             organization_query (OrganizationQuery): Query for organization entities.
-            building_repository (BuildingRepository): Repository for building persistence.
-            activity_query (ActivityQuery): Query for activity entities.
+            organization_validator (OrganizationValidator): Validator ensuring organization existence.
+            building_validator (BuildingValidator): Validator ensuring building existence.
+            activity_validator (ActivityValidator): Validator ensuring activity existence.
         """
         self._organization_uow = organization_uow
         self._organization_query = organization_query
-        self._building_repository = building_repository
-        self._activity_query = activity_query
+        self._organization_validator = organization_validator
+        self._building_validator = building_validator
+        self._activity_validator = activity_validator
 
     async def create(self, entity: Organization) -> Organization:
         """Creates a new organization entity after validating its parent existence and nesting constraints.
@@ -49,11 +50,15 @@ class OrganizationService:
 
         Returns:
             Organization: The newly created organization entity.
+
+        Raises:
+            BuildingNotFoundError: If no building exists with the given ID.
+            ActivityNotFoundError: If one or more activity IDs do not exist.
         """
         activity_ids = entity.activity_ids
 
-        await self._validate_building_exists(entity.building_id)
-        await self._validate_activities_exist(activity_ids)
+        await self._building_validator.ensure_exists(entity.building_id)
+        await self._activity_validator.ensure_exists_many(activity_ids)
 
         async with self._organization_uow:
             created = await self._organization_uow.organization_repository.create(entity)
@@ -100,12 +105,7 @@ class OrganizationService:
         Raises:
             OrganizationNotFoundError: If no organization exists with the given ID.
         """
-        organization = await self._organization_uow.organization_repository.get_by_id(organization_id)
-
-        if organization is None:
-            raise OrganizationNotFoundError(organization_id=organization_id)
-
-        return organization
+        return await self._organization_validator.ensure_exists(organization_id)
 
     async def update(self, entity: Organization) -> Organization:
         """Updates an existing organization entity after validating parent existence and nesting depth.
@@ -115,11 +115,15 @@ class OrganizationService:
 
         Returns:
             Organization: The updated organization entity.
+
+        Raises:
+            BuildingNotFoundError: If no building exists with the given ID.
+            ActivityNotFoundError: If one or more activity IDs do not exist.
         """
         activity_ids = entity.activity_ids
 
-        await self._validate_building_exists(entity.building_id)
-        await self._validate_activities_exist(activity_ids)
+        await self._building_validator.ensure_exists(entity.building_id)
+        await self._activity_validator.ensure_exists_many(activity_ids)
 
         async with self._organization_uow:
             saved = await self._organization_uow.organization_repository.update(entity)
@@ -145,49 +149,8 @@ class OrganizationService:
         Raises:
             OrganizationNotFoundError: If no organization exists with the given ID.
         """
-        organization = await self.get_by_id(organization_id)
+        organization = await self._organization_validator.ensure_exists(organization_id)
 
         async with self._organization_uow:
             await self._organization_uow.organization_activity_repository.delete(organization_id=organization_id)
             await self._organization_uow.organization_repository.delete(organization.organization_id)
-
-    async def _validate_building_exists(self, building_id: BuildingId) -> None:
-        """Validates that a building with the given ID exists.
-
-        Args:
-            building_id (BuildingId): The unique identifier of the building to validate.
-
-        Returns:
-            None
-
-        Raises:
-            BuildingNotFoundError: If no building exists with the given ID.
-        """
-        building = await self._building_repository.get_by_id(building_id)
-        if building is None:
-            raise BuildingNotFoundError(building_id=building_id)
-
-    async def _validate_activities_exist(self, activity_ids: Sequence[ActivityId] | None) -> None:
-        """Validates that all given activity IDs exist.
-
-        Args:
-            activity_ids (Sequence[ActivityId] | None): A sequence of unique activity identifiers to validate.
-
-        Returns:
-            None
-
-        Raises:
-            ActivityNotFoundError: If one or more activity IDs do not exist.
-        """
-        if not activity_ids:
-            return
-
-        spec = InListSpecification[Any]("id", activity_ids)
-        existing_count = await self._activity_query.get_count([spec])
-        if existing_count != len(activity_ids):
-            found = await self._activity_query.get_list(
-                pagination=PaginationInfo(page=1, per_page=None), specifications=[spec]
-            )
-            found_ids = {a.activity_id for a in found}
-            missing = [aid for aid in activity_ids if aid not in found_ids]
-            raise ActivityNotFoundError(activity_id=missing)
