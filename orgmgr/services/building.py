@@ -4,9 +4,9 @@ from collections.abc import Sequence
 from typing import Any
 
 from orgmgr.core.entities.building import Building
-from orgmgr.core.exceptions.building import BuildingNotFoundError
 from orgmgr.core.interfaces.queries.building import BuildingQuery
 from orgmgr.core.interfaces.repositories.building import BuildingRepository
+from orgmgr.core.interfaces.validators.building import BuildingValidator
 from orgmgr.core.types import BuildingId
 from orgmgr.lib.entities.page import Page, PaginationInfo
 from orgmgr.lib.specification.field import FieldSpecification
@@ -16,15 +16,22 @@ from orgmgr.lib.specification.sort import SortSpecification
 class BuildingService:
     """Service layer for managing building entities."""
 
-    def __init__(self, building_repository: BuildingRepository, building_query: BuildingQuery):
-        """Initializes the BuildingService with a repository and an action handler for building operations.
+    def __init__(
+        self,
+        building_repository: BuildingRepository,
+        building_query: BuildingQuery,
+        building_validator: BuildingValidator,
+    ):
+        """Initialize the building service.
 
         Args:
             building_repository (BuildingRepository): Repository for building persistence.
             building_query (BuildingQuery): Query for building entities.
+            building_validator (BuildingValidator): Validator ensuring building existence and state.
         """
         self._building_repository = building_repository
         self._building_query = building_query
+        self._building_validator = building_validator
 
     async def create(self, entity: Building) -> Building:
         """Creates a new building entity after validating its parent existence and nesting constraints.
@@ -69,12 +76,7 @@ class BuildingService:
         Raises:
             BuildingNotFoundError: If no building exists with the given ID.
         """
-        building = await self._building_repository.get_by_id(building_id)
-
-        if building is None:
-            raise BuildingNotFoundError(building_id=building_id)
-
-        return building
+        return await self._building_validator.ensure_exists(building_id)
 
     async def update(self, entity: Building) -> Building:
         """Updates an existing building entity after validating parent existence and nesting depth.
@@ -99,5 +101,5 @@ class BuildingService:
         Raises:
             BuildingNotFoundError: If no building exists with the given ID.
         """
-        building = await self.get_by_id(building_id)
+        building = await self._building_validator.ensure_exists(building_id)
         await self._building_repository.delete(building.building_id)

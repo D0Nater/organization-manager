@@ -6,7 +6,7 @@ from dishka.integrations.fastapi import FastapiProvider
 from orgmgr.implementations.queries import SAActivityQuery, SABuildingQuery, SAOrganizationQuery
 from orgmgr.implementations.repositories import SAActivityRepository, SABuildingRepository
 from orgmgr.implementations.uow import SAOrganizationUnitOfWork
-from orgmgr.implementations.validators import SAActivityValidator
+from orgmgr.implementations.validators import SAActivityValidator, SABuildingValidator
 from orgmgr.lib.configs import AuthConfig
 from orgmgr.services import ActivityService, AuthService, BuildingService, OrganizationService
 
@@ -47,18 +47,22 @@ class ServiceProvider(FastapiProvider):
 
     @provide(scope=Scope.REQUEST)
     def building_service(
-        self, building_repository: SABuildingRepository, building_query: SABuildingQuery
+        self,
+        building_repository: SABuildingRepository,
+        building_query: SABuildingQuery,
+        building_validator: SABuildingValidator,
     ) -> BuildingService:
         """Provides the BuildingService for managing buildings.
 
         Args:
             building_repository (SABuildingRepository): Repository instance for building entities.
             building_query (SABuildingQuery): Query instance for building entities.
+            building_validator (SABuildingValidator): Validator instance for building entities.
 
         Returns:
             BuildingService: A service instance for handling building logic.
         """
-        return BuildingService(building_repository, building_query)
+        return BuildingService(building_repository, building_query, building_validator)
 
     @provide(scope=Scope.REQUEST)
     def organization_service(
