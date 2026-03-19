@@ -27,7 +27,7 @@ class BuildingService:
         Args:
             building_repository (BuildingRepository): Repository for building persistence.
             building_query (BuildingQuery): Query for building entities.
-            building_validator (BuildingValidator): Validator ensuring building existence and state.
+            building_validator (BuildingValidator): Validator ensuring building existence.
         """
         self._building_repository = building_repository
         self._building_query = building_query

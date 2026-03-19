@@ -1,5 +1,6 @@
 """Activity validator interface."""
 
+from collections.abc import Sequence
 from typing import Protocol
 
 from orgmgr.core.entities.activity import Activity
@@ -20,6 +21,19 @@ class ActivityValidator(Protocol):
 
         Raises:
             ActivityNotFoundError: If no activity exists with the given ID.
+        """
+
+    async def ensure_exists_many(self, activity_ids: Sequence[ActivityId]) -> None:
+        """Validates that all given activity IDs exist.
+
+        Args:
+            activity_ids (Sequence[ActivityId]): A sequence of unique activity identifiers to validate.
+
+        Returns:
+            None
+
+        Raises:
+            ActivityNotFoundError: If one or more activity IDs do not exist.
         """
 
     async def validate_nesting(self, parent_id: ActivityId) -> None:
