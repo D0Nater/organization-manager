@@ -27,7 +27,7 @@ class OrganizationService:
         building_validator: BuildingValidator,
         activity_validator: ActivityValidator,
     ):
-        """Initializes the OrganizationService with a repository and an action handler for organization operations.
+        """Initialize the organization service.
 
         Args:
             organization_uow (OrganizationUnitOfWork): Organization Unit of Work.
