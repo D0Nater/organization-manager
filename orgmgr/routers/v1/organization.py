@@ -9,7 +9,6 @@ from orgmgr.core.exceptions.building import BuildingNotFoundError
 from orgmgr.core.exceptions.organization import OrganizationNotFoundError
 from orgmgr.core.types import OrganizationId
 from orgmgr.dependencies.auth import require_auth
-from orgmgr.lib.entities.page import PaginationInfo
 from orgmgr.lib.schemas.pagination import PaginationRequest
 from orgmgr.lib.utils.openapi import exc_list
 from orgmgr.schemas.organization import (
@@ -54,9 +53,8 @@ async def get_organizations(
     filters: OrganizationFilterSchema = QueryDepends(OrganizationFilterSchema),
 ) -> OrganizationPaginationSchema:
     """Retrieve a paginated list of organization."""
-    pagination_info = PaginationInfo(page=pagination.page, per_page=pagination.limit)
     page = await organization_service.get_page(
-        pagination_info,
+        pagination=pagination.to_pagination_info(),
         specifications=filters.to_field_specifications(),
         sort_specifications=filters.to_sort_specifications(),
         filters=filters.to_filters(),

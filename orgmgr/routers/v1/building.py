@@ -7,7 +7,6 @@ from pyfa_converter_v2 import QueryDepends
 from orgmgr.core.exceptions.building import BuildingNotFoundError
 from orgmgr.core.types import BuildingId
 from orgmgr.dependencies.auth import require_auth
-from orgmgr.lib.entities.page import PaginationInfo
 from orgmgr.lib.schemas.pagination import PaginationRequest
 from orgmgr.lib.utils.openapi import exc_list
 from orgmgr.schemas.building import (
@@ -47,9 +46,8 @@ async def get_buildings(
     filters: BuildingFilterSchema = QueryDepends(BuildingFilterSchema),
 ) -> BuildingPaginationSchema:
     """Retrieve a paginated list of building."""
-    pagination_info = PaginationInfo(page=pagination.page, per_page=pagination.limit)
     page = await building_service.get_page(
-        pagination_info,
+        pagination=pagination.to_pagination_info(),
         specifications=filters.to_field_specifications(),
         sort_specifications=filters.to_sort_specifications(),
     )

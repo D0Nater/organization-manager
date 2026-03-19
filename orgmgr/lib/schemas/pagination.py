@@ -3,7 +3,7 @@
 from collections.abc import Sequence
 from typing import Any, ClassVar, Self
 
-from orgmgr.lib.entities.page import Page
+from orgmgr.lib.entities.page import Page, PaginationInfo
 
 from . import fields as f
 from .base import BaseEntitySchema, BaseSchema
@@ -21,6 +21,14 @@ class PaginationRequest(BaseSchema):
 
     limit: int = LIMIT
     page: int = PAGE
+
+    def to_pagination_info(self) -> PaginationInfo:
+        """Convert request data into pagination domain object.
+
+        Returns:
+            PaginationInfo: Pagination parameters with page number and items per page.
+        """
+        return PaginationInfo(page=self.page, per_page=self.limit)
 
 
 class PaginationResponse[TBaseSchema: BaseSchema](BaseSchema):

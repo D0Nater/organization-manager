@@ -7,7 +7,6 @@ from pyfa_converter_v2 import QueryDepends
 from orgmgr.core.exceptions.activity import ActivityMaximumNestingError, ActivityNotFoundError
 from orgmgr.core.types import ActivityId
 from orgmgr.dependencies.auth import require_auth
-from orgmgr.lib.entities.page import PaginationInfo
 from orgmgr.lib.schemas.pagination import PaginationRequest
 from orgmgr.lib.utils.openapi import exc_list
 from orgmgr.schemas.activity import (
@@ -52,9 +51,8 @@ async def get_activities(
     filters: ActivityFilterSchema = QueryDepends(ActivityFilterSchema),
 ) -> ActivityPaginationSchema:
     """Retrieve a paginated list of activity."""
-    pagination_info = PaginationInfo(page=pagination.page, per_page=pagination.limit)
     page = await activity_service.get_page(
-        pagination_info,
+        pagination=pagination.to_pagination_info(),
         specifications=filters.to_field_specifications(),
         sort_specifications=filters.to_sort_specifications(),
     )
