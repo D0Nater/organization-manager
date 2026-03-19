@@ -46,6 +46,7 @@ class ActivityValidator(Protocol):
             None
 
         Raises:
+            ActivityNotFoundError: If the parent activity does not exist.
             ActivityMaximumNestingError: If adding a new activity under
                 the specified parent exceeds the maximum nesting level.
         """

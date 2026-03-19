@@ -93,6 +93,7 @@ class SAActivityValidator(SABaseValidator[Activity, ActivityModel], ActivityVali
             None
 
         Raises:
+            ActivityNotFoundError: If the parent activity does not exist.
             ActivityMaximumNestingError: If the nesting depth equals or exceeds the defined MAX_NESTING_LEVEL.
         """
         depth = 1
